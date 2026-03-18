@@ -12,8 +12,8 @@ load_dotenv()
 # AACT database connection parameters
 AACT_CONFIG = {
     'dbname': 'aact',
-    'user': os.getenv('ashiha'),
-    'password': os.getenv('Avani_061106'),
+    'user': os.getenv('AACT_USER'),
+    'password': os.getenv('AACT_PASSWORD'),
     'host': 'aact-db.ctti-clinicaltrials.org',
     'port': 5432,
     'sslmode': 'require'
