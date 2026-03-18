@@ -8,6 +8,9 @@ from data import patients, protocols, vitals_history, suggestions
 from engine.relevance import score_protocols
 from models import db, Note
 
+# NEW: Import AACT integration module
+from aact_integration import search_and_transform, get_aact_connection
+
 api_bp = Blueprint('api', __name__)
 
 start_time = time.time()
@@ -156,6 +159,36 @@ def compress_image():
         'stats': stats,
         'compressed_base64': base64.b64encode(compressed_data).decode('utf-8')
     })
+
+# ====== NEW AACT SEARCH ENDPOINT ======
+@api_bp.route('/aact/search', methods=['GET'])
+@login_required
+def aact_search():
+    """Search AACT database for emergency protocols matching keywords."""
+    keywords_param = request.args.get('keywords', '')
+    limit = int(request.args.get('limit', 10))
+    
+    if not keywords_param:
+        return jsonify({'error': 'Missing keywords parameter'}), 400
+    
+    # Split by comma to allow multiple keywords
+    keywords = [k.strip() for k in keywords_param.split(',') if k.strip()]
+    
+    # Optional: test connection first
+    conn = get_aact_connection()
+    if not conn:
+        return jsonify({'error': 'AACT database connection failed'}), 503
+    
+    try:
+        protocols = search_and_transform(keywords, limit=limit)
+        return jsonify({
+            'results': protocols,
+            'count': len(protocols)
+        })
+    except Exception as e:
+        # Log error (you can use app.logger if available)
+        print(f"AACT search error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 # ====== Error handlers ======
 @api_bp.errorhandler(404)

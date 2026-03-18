@@ -10,7 +10,7 @@ from models import db, User
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:password@localhost:3306/emergency_triage')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'mysql+pymysql://u0lo8j3zymwbsovo:Yb5eYTgclMuOrWH8zXVS@bbuxvadliy1vq8ppyblh-mysql.services.clever-cloud.com:3306/bbuxvadliy1vq8ppyblh')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
