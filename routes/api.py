@@ -8,8 +8,8 @@ from data import patients, protocols, vitals_history, suggestions
 from engine.relevance import score_protocols
 from models import db, Note
 
-# NEW: Import AACT integration
-from aact_integration import search_and_transform
+# Import AACT integration
+from aact_integration import search_and_transform, get_aact_connection
 
 api_bp = Blueprint('api', __name__)
 
@@ -196,7 +196,7 @@ def compress_image():
         'compressed_base64': base64.b64encode(compressed_data).decode('utf-8')
     })
 
-# ====== AACT search endpoint (optional, kept for direct access) ======
+# ====== AACT search endpoint ======
 @api_bp.route('/aact/search', methods=['GET'])
 @login_required
 def aact_search():
@@ -211,6 +211,26 @@ def aact_search():
     except Exception as e:
         print(f"AACT search error: {e}")
         return jsonify({'error': str(e)}), 500
+
+# ====== NEW: AACT test endpoint ======
+@api_bp.route('/aact/test', methods=['GET'])
+@login_required
+def aact_test():
+    """Test AACT connection and return status."""
+    conn = get_aact_connection()
+    if conn:
+        # Try a simple query to confirm
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(*) FROM ctgov.studies;")
+            count = cur.fetchone()[0]
+            cur.close()
+            conn.close()
+            return jsonify({'status': 'success', 'message': f'Connected. Total studies: {count}'})
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': f'Connection succeeded but query failed: {str(e)}'})
+    else:
+        return jsonify({'status': 'error', 'message': 'Failed to connect to AACT database. Check credentials or network.'})
 
 # ====== Error handlers ======
 @api_bp.errorhandler(404)

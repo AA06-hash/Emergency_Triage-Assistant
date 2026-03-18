@@ -2,6 +2,7 @@
 import os
 import re
 import psycopg2
+import traceback
 from functools import lru_cache
 from dotenv import load_dotenv
 
@@ -25,6 +26,7 @@ def get_aact_connection():
         return conn
     except Exception as e:
         print(f"Error connecting to AACT: {e}")
+        traceback.print_exc()
         return None
 
 @lru_cache(maxsize=128)
@@ -119,7 +121,7 @@ def fetch_emergency_protocols(condition_keywords, limit_per_keyword=20):
     all_results = []
     
     for keyword in condition_keywords:
-        # Improved query: only interventional and recruiting/active studies
+        # Query with strict filters
         query = """
         SELECT 
             s.nct_id,
