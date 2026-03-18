@@ -15,7 +15,8 @@ protocols = {
                 'Heparin bolus + infusion'
             ],
             'contraindications': ['Hypotension (SBP <90)', 'RV infarct', 'Recent bleeding'],
-            'source': 'AHA/ACC 2023'
+            'source': 'AHA/ACC 2023',
+            'drugs': ['aspirin', 'nitroglycerin', 'morphine', 'heparin']
         },
         'nstemi': {
             'title': 'NSTEMI Protocol',
@@ -29,7 +30,8 @@ protocols = {
                 'Cardiology consult'
             ],
             'contraindications': ['Active bleeding', 'Severe bradycardia'],
-            'source': 'AHA/ACC 2023'
+            'source': 'AHA/ACC 2023',
+            'drugs': ['aspirin', 'nitroglycerin', 'heparin', 'beta-blocker']
         },
         'cardiac_arrest': {
             'title': 'Cardiac Arrest Protocol',
@@ -43,7 +45,8 @@ protocols = {
                 'Amiodarone for refractory VF/pVT'
             ],
             'contraindications': ['DNAR order'],
-            'source': 'AHA ACLS 2023'
+            'source': 'AHA ACLS 2023',
+            'drugs': ['epinephrine', 'amiodarone']
         },
         'heart_failure': {
             'title': 'Acute Heart Failure Protocol',
@@ -57,7 +60,8 @@ protocols = {
                 'Assess volume status'
             ],
             'contraindications': ['Hypotension', 'Severe aortic stenosis'],
-            'source': 'ESC 2021'
+            'source': 'ESC 2021',
+            'drugs': ['furosemide', 'nitroglycerin']
         }
     },
     'trauma': {
@@ -73,7 +77,8 @@ protocols = {
                 'E: Exposure and environment'
             ],
             'contraindications': [],
-            'source': 'ATLS 10th Ed.'
+            'source': 'ATLS 10th Ed.',
+            'drugs': []  # No specific drugs mentioned
         },
         'hemorrhage_control': {
             'title': 'Hemorrhage Control',
@@ -87,7 +92,8 @@ protocols = {
                 'Massive transfusion protocol'
             ],
             'contraindications': [],
-            'source': 'EAST Guidelines'
+            'source': 'EAST Guidelines',
+            'drugs': []  # Massive transfusion may involve blood products, but no specific drugs listed
         },
         'tbi': {
             'title': 'TBI Protocol',
@@ -101,7 +107,8 @@ protocols = {
                 'Neurosurgery consult'
             ],
             'contraindications': ['Hypotension', 'Hypoxia'],
-            'source': 'Brain Trauma Foundation 2016'
+            'source': 'Brain Trauma Foundation 2016',
+            'drugs': ['mannitol', 'hypertonic saline']
         },
         'pelvic_fracture': {
             'title': 'Pelvic Fracture Protocol',
@@ -115,7 +122,8 @@ protocols = {
                 'Orthopedic consult'
             ],
             'contraindications': [],
-            'source': 'EAST Guidelines'
+            'source': 'EAST Guidelines',
+            'drugs': []  # No specific drugs; contrast may be used but not a medication per se
         }
     },
     'respiratory': {
@@ -131,7 +139,8 @@ protocols = {
                 'Non-invasive ventilation if hypercapnia'
             ],
             'contraindications': ['Oxygen sensitivity (rare)'],
-            'source': 'GOLD 2023'
+            'source': 'GOLD 2023',
+            'drugs': ['albuterol', 'ipratropium', 'corticosteroids', 'antibiotics']
         },
         'pe': {
             'title': 'Pulmonary Embolism',
@@ -145,7 +154,8 @@ protocols = {
                 'Bed rest'
             ],
             'contraindications': ['Active bleeding', 'Recent surgery'],
-            'source': 'ACP 2023'
+            'source': 'ACP 2023',
+            'drugs': ['heparin', 'thrombolytics']
         },
         'asthma': {
             'title': 'Acute Asthma Attack',
@@ -159,7 +169,8 @@ protocols = {
                 'Magnesium sulfate if severe'
             ],
             'contraindications': [],
-            'source': 'NAEPP EPR-3 2007'
+            'source': 'NAEPP EPR-3 2007',
+            'drugs': ['albuterol', 'ipratropium', 'corticosteroids', 'magnesium sulfate']
         },
         'pneumothorax': {
             'title': 'Pneumothorax',
@@ -172,7 +183,8 @@ protocols = {
                 'Chest x-ray confirmation'
             ],
             'contraindications': [],
-            'source': 'ACCP 2020'
+            'source': 'ACCP 2020',
+            'drugs': []  # No drugs listed
         }
     },
     'neuro': {
@@ -189,7 +201,8 @@ protocols = {
                 'Admit to stroke unit'
             ],
             'contraindications': ['ICH on CT', 'Recent surgery', 'Coagulopathy'],
-            'source': 'AHA/ASA 2023'
+            'source': 'AHA/ASA 2023',
+            'drugs': ['tPA']  # tissue plasminogen activator
         },
         'hemorrhagic_stroke': {
             'title': 'Hemorrhagic Stroke',
@@ -203,7 +216,8 @@ protocols = {
                 'Seizure prophylaxis'
             ],
             'contraindications': [],
-            'source': 'AHA/ASA 2023'
+            'source': 'AHA/ASA 2023',
+            'drugs': []  # Reversal agents depend on anticoagulant, not specified; BP meds not listed
         },
         'seizure': {
             'title': 'Seizure Protocol',
@@ -217,7 +231,8 @@ protocols = {
                 'EEG if status epilepticus'
             ],
             'contraindications': [],
-            'source': 'AAN 2017'
+            'source': 'AAN 2017',
+            'drugs': ['lorazepam', 'fosphenytoin', 'levetiracetam']
         },
         'meningitis': {
             'title': 'Meningitis Protocol',
@@ -231,7 +246,8 @@ protocols = {
                 'Respiratory isolation'
             ],
             'contraindications': ['Increased ICP (relative)'],
-            'source': 'CDC / IDSA'
+            'source': 'CDC / IDSA',
+            'drugs': ['ceftriaxone', 'vancomycin', 'dexamethasone']
         }
     }
 }
