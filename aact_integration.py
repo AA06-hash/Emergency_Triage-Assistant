@@ -11,10 +11,11 @@ load_dotenv()
 # AACT database connection parameters
 AACT_CONFIG = {
     'dbname': 'aact',
-    'user': os.getenv('AACT_USER'),
-    'password': os.getenv('AACT_PASSWORD'),
+    'user': os.getenv('ashiha'),
+    'password': os.getenv('Avani_061106'),
     'host': 'aact-db.ctti-clinicaltrials.org',
     'port': 5432
+    'sslmode': 'require'
 }
 
 def get_aact_connection():
@@ -107,7 +108,7 @@ def extract_drugs_from_text(text):
 
 def fetch_emergency_protocols(condition_keywords, limit_per_keyword=20):
     """
-    Query AACT for studies matching the given keywords (e.g., ['heart attack', 'stroke']).
+    Query AACT for interventional, recruiting/active studies matching the given keywords.
     Returns a list of raw study dictionaries.
     """
     conn = get_aact_connection()
@@ -118,7 +119,7 @@ def fetch_emergency_protocols(condition_keywords, limit_per_keyword=20):
     all_results = []
     
     for keyword in condition_keywords:
-        # Search in titles and brief summary
+        # Improved query: only interventional and recruiting/active studies
         query = """
         SELECT 
             s.nct_id,
@@ -129,16 +130,15 @@ def fetch_emergency_protocols(condition_keywords, limit_per_keyword=20):
             s.phase,
             s.enrollment,
             bs.description as brief_summary,
-            ec.criteria,
-            po.description as primary_outcome
+            ec.criteria
         FROM ctgov.studies s
         LEFT JOIN ctgov.brief_summaries bs ON s.nct_id = bs.nct_id
         LEFT JOIN ctgov.eligibilities ec ON s.nct_id = ec.nct_id
-        LEFT JOIN ctgov.design_outcomes po ON s.nct_id = po.nct_id AND po.outcome_type = 'primary'
-        WHERE 
-            LOWER(s.brief_title) LIKE %s 
-            OR LOWER(s.official_title) LIKE %s
-            OR LOWER(bs.description) LIKE %s
+        WHERE s.study_type = 'Interventional'
+          AND s.overall_status IN ('Recruiting', 'Active, not recruiting')
+          AND (LOWER(s.brief_title) LIKE %s 
+               OR LOWER(s.official_title) LIKE %s
+               OR LOWER(bs.description) LIKE %s)
         LIMIT %s;
         """
         search_term = f"%{keyword.lower()}%"
@@ -156,7 +156,6 @@ def fetch_emergency_protocols(condition_keywords, limit_per_keyword=20):
                 'enrollment': row[6],
                 'brief_summary': row[7],
                 'criteria': row[8],
-                'primary_outcome': row[9],
                 'search_keyword': keyword
             })
     
