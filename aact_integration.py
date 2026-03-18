@@ -14,7 +14,7 @@ AACT_CONFIG = {
     'user': os.getenv('ashiha'),
     'password': os.getenv('Avani_061106'),
     'host': 'aact-db.ctti-clinicaltrials.org',
-    'port': 5432
+    'port': 5432,
     'sslmode': 'require'
 }
 
