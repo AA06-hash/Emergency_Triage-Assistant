@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Triage Assistant</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono&family=Epilogue:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="topbar">
+        <div class="logo">EMERGENCY TRIAGE ASSISTANT</div>
+        <div class="status">
+            <span class="status-indicator" id="statusIndicator"></span>
+            <span id="uptime">--:--:--</span>
+        </div>
+    </div>
+    <div class="container">
+        <!-- Left Column - Patient Panel -->
+        <div class="panel patient-panel">
+            <div class="patient-tabs">
+                <button class="patient-tab active" data-patient="cardiac">R. Chen</button>
+                <button class="patient-tab" data-patient="trauma">S. Martinez</button>
+                <button class="patient-tab" data-patient="respiratory">J. Thompson</button>
+                <button class="patient-tab" data-patient="neuro">P. Wong</button>
+            </div>
+            <div class="patient-search">
+    <input type="text" id="patientSearch" placeholder="Search patients..." autocomplete="off">
+    <div id="patientSearchResults" class="search-results"></div>
+</div>
+            <div id="patientContent" class="patient-content">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Center Column - Query Engine -->
+        <div class="panel query-panel">
+            <div class="chat-messages" id="chatMessages">
+                <!-- Populated by JavaScript -->
+            </div>
+            <div class="suggestion-chips" id="suggestionChips">
+                <!-- Populated by JavaScript -->
+            </div>
+            <!-- Quick action buttons -->
+            <div class="quick-actions">
+                <button class="quick-btn" data-action="critical">Critical only</button>
+                <button class="quick-btn" data-action="top3">Top 3</button>
+            </div>
+            <div class="query-input-area">
+                <input type="text" id="queryInput" placeholder="Enter clinical query..." autocomplete="off">
+                <button id="sendQueryBtn">→</button>
+            </div>
+        </div>
+
+        <!-- Right Column - Protocols Panel -->
+        <div class="panel protocols-panel">
+            <div class="protocols-header">
+                <h2>MATCHING PROTOCOLS</h2>
+                <span class="protocol-count" id="protocolCount">0</span>
+            </div>
+            <div id="protocolsList" class="protocols-list">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Protocol Detail Modal -->
+    <div id="protocolModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modalProtocolDetail"></div>
+        </div>
+    </div>
+    <div class="protocol-filter">
+    <input type="text" id="protocolFilter" placeholder="Filter protocols...">
+</div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/sparkline.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

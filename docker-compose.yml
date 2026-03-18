@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: triage
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://user:userpassword@db:3306/triage
+      - SECRET_KEY=change-this-in-production
+      - SCALEDOWN_API_KEY=${SCALEDOWN_API_KEY}
+    depends_on:
+      - db
+volumes:
+  mysql_data:

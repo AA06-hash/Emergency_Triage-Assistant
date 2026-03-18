@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Emergency Triage</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .auth-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--bg-root);
+        }
+        .auth-container {
+            background-color: var(--bg-panel);
+            padding: 40px;
+            border: 1px solid var(--amber);
+            width: 300px;
+        }
+        .auth-container h2 {
+            font-family: 'Bebas Neue', cursive;
+            color: var(--amber);
+            margin-bottom: 20px;
+        }
+        .auth-container input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: var(--bg-root);
+            border: 1px solid var(--t3);
+            color: var(--t1);
+        }
+        .auth-container button {
+            width: 100%;
+            padding: 8px;
+            background: var(--amber);
+            border: none;
+            color: var(--bg-root);
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <h2>Login</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <p style="color: var(--red);">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p style="margin-top: 10px;">Don't have an account? <a href="{{ url_for('auth.register') }}" style="color: var(--amber);">Register</a></p>
+    </div>
+</body>
+</html>

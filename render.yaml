@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: emergency-triage-assistant
+    runtime: python
+    buildCommand: ""
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    envVars:
+      - key: FLASK_ENV
+        value: production
+    healthCheckPath: /api/health
