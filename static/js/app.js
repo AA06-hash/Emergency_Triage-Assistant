@@ -1,3 +1,5 @@
+// static/js/app.js – fully updated with AACT source badge
+
 // State
 let currentPatientKey = 'cardiac';
 let patientCache = {};
@@ -334,6 +336,10 @@ function renderProtocols(protocols) {
     }
     protocols.forEach((p, idx) => {
         const icon = { cardiac: '❤️', trauma: '🩸', respiratory: '🫁', neuro: '🧠' }[p.category] || '📋';
+        // Add source badge for AACT results
+        const sourceBadge = p.source === 'clinicaltrials' 
+            ? '<span class="source-badge">ClinicalTrials.gov</span>' 
+            : '';
         const card = document.createElement('div');
         card.className = `protocol-card ${p.priority}`;
         card.setAttribute('data-priority', p.priority);
@@ -349,6 +355,7 @@ function renderProtocols(protocols) {
                     </div>
                 </div>
             </div>
+            ${sourceBadge}
         `;
         card.addEventListener('click', () => openProtocolModal(p));
         protocolsList.appendChild(card);

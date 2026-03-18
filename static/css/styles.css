@@ -819,3 +819,14 @@ button:focus, input:focus, .chip:focus, .quick-btn:focus, .close-modal:focus {
         width: calc(100% - 32px);
     }
 }
+/* Source badge for ClinicalTrials.gov results */
+.source-badge {
+    display: inline-block;
+    background-color: var(--cyan);
+    color: var(--bg-root);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 2px 6px;
+    margin-top: 4px;
+    clip-path: polygon(0 0, 100% 0, 90% 100%, 0% 100%);
+}

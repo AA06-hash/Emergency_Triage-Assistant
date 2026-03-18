@@ -8,8 +8,8 @@ from data import patients, protocols, vitals_history, suggestions
 from engine.relevance import score_protocols
 from models import db, Note
 
-# NEW: Import AACT integration module
-from aact_integration import search_and_transform, get_aact_connection
+# NEW: Import AACT integration
+from aact_integration import search_and_transform
 
 api_bp = Blueprint('api', __name__)
 
@@ -107,7 +107,43 @@ def query():
     patient = patients.patients.get(patient_key)
     if not patient:
         abort(404)
-    results = score_protocols(query_text, patient, threshold, limit)
+
+    # Get static protocol results
+    static_results = score_protocols(query_text, patient, threshold, limit)
+
+    # Decide if we need AACT results
+    need_aact = False
+    if len(static_results) < 3:
+        need_aact = True
+    elif static_results and static_results[0]['score'] < 60:
+        need_aact = True
+
+    if need_aact:
+        try:
+            # Call AACT search with the same query (use single keyword)
+            aact_protocols = search_and_transform([query_text], limit=5)
+            # Add a default score and source flag
+            for p in aact_protocols:
+                p['score'] = 50  # Base score for AACT results
+                p['source'] = 'clinicaltrials'
+                # Ensure required fields exist for frontend
+                if 'priority' not in p:
+                    p['priority'] = 'moderate'
+                if 'steps' not in p:
+                    p['steps'] = ['See protocol details at source']
+                if 'contraindications' not in p:
+                    p['contraindications'] = []
+            # Merge static and AACT results, then sort by score descending
+            combined = static_results + aact_protocols
+            combined.sort(key=lambda x: x.get('score', 0), reverse=True)
+            results = combined[:limit]
+        except Exception as e:
+            # Log error and fall back to static only
+            print(f"AACT query error: {e}")
+            results = static_results
+    else:
+        results = static_results
+
     return jsonify({'results': results})
 
 @api_bp.route('/patients/search', methods=['GET'])
@@ -160,33 +196,19 @@ def compress_image():
         'compressed_base64': base64.b64encode(compressed_data).decode('utf-8')
     })
 
-# ====== NEW AACT SEARCH ENDPOINT ======
+# ====== AACT search endpoint (optional, kept for direct access) ======
 @api_bp.route('/aact/search', methods=['GET'])
 @login_required
 def aact_search():
-    """Search AACT database for emergency protocols matching keywords."""
     keywords_param = request.args.get('keywords', '')
     limit = int(request.args.get('limit', 10))
-    
     if not keywords_param:
         return jsonify({'error': 'Missing keywords parameter'}), 400
-    
-    # Split by comma to allow multiple keywords
     keywords = [k.strip() for k in keywords_param.split(',') if k.strip()]
-    
-    # Optional: test connection first
-    conn = get_aact_connection()
-    if not conn:
-        return jsonify({'error': 'AACT database connection failed'}), 503
-    
     try:
         protocols = search_and_transform(keywords, limit=limit)
-        return jsonify({
-            'results': protocols,
-            'count': len(protocols)
-        })
+        return jsonify({'results': protocols, 'count': len(protocols)})
     except Exception as e:
-        # Log error (you can use app.logger if available)
         print(f"AACT search error: {e}")
         return jsonify({'error': str(e)}), 500
 
