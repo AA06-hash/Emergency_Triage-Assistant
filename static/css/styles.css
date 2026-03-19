@@ -1,4 +1,4 @@
-/* static/css/styles.css – full updated version */
+/* static/css/styles.css – full updated version with mobile improvements */
 
 :root {
     --bg-root: #040507;
@@ -111,7 +111,7 @@ body::after {
     background-color: var(--bg-card);
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments for tablets */
 @media (max-width: 1200px) {
     .container {
         grid-template-columns: 300px 1fr;
@@ -776,16 +776,72 @@ button:focus, input:focus, .chip:focus, .quick-btn:focus, .close-modal:focus {
     font-family: 'Epilogue', sans-serif;
 }
 
-/* Mobile responsiveness */
+/* Mobile responsiveness – improved for phones */
 @media (max-width: 768px) {
     .container {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
+        height: auto;
+        min-height: calc(100vh - 48px);
     }
-    .patient-panel, .query-panel, .protocols-panel {
-        max-height: 400px;
+    
+    .panel {
+        max-height: 50vh; /* each panel takes at most half the viewport height */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
     }
+    
+    .patient-panel {
+        max-height: 40vh; /* patient panel slightly smaller */
+    }
+    
+    .query-panel {
+        max-height: 35vh; /* chat panel medium */
+    }
+    
+    .protocols-panel {
+        max-height: 45vh; /* protocols panel largest */
+    }
+    
+    .patient-name {
+        font-size: 24px;
+    }
+    
+    .vital-value {
+        font-size: 16px;
+    }
+    
+    .query-input-area input,
+    .query-input-area button,
+    #micBtn {
+        height: 44px; /* larger touch target */
+        font-size: 16px;
+    }
+    
+    .chip, .quick-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
     .search-results {
         width: calc(100% - 32px);
+        max-height: 120px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 16px;
+    }
+    
+    .protocol-title {
+        font-size: 16px;
+    }
+    
+    .protocol-meta {
+        flex-wrap: wrap;
+    }
+    
+    .source-badge {
+        font-size: 9px;
     }
 }
