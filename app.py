@@ -1,4 +1,5 @@
 import os
+import time
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -10,8 +11,13 @@ from models import db, User
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'mysql+pymysql://u0lo8j3zymwbsovo:Yb5eYTgclMuOrWH8zXVS@bbuxvadliy1vq8ppyblh-mysql.services.clever-cloud.com:3306/bbuxvadliy1vq8ppyblh')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'mysql+pymysql://root:password@localhost:3306/emergency_triage')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 10,
+        'pool_recycle': 300,
+        'pool_pre_ping': True
+    }
 
     db.init_app(app)
 
@@ -31,10 +37,20 @@ def create_app():
 
 app = create_app()
 
-# ✅ IMPORTANT: Create tables if they don't exist
+# Create tables with retry logic
 with app.app_context():
-    db.create_all()
-    print("✅ Database tables created (if they didn't exist)")
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            db.create_all()
+            print("Database tables created (if they didn't exist)")
+            break
+        except Exception as e:
+            print(f"Database connection attempt {attempt+1} failed: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(2)
+            else:
+                print("Could not connect to database after multiple attempts.")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
