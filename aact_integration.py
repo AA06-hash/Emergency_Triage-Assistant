@@ -1,6 +1,7 @@
 # aact_integration.py
 import os
 import re
+import time
 import psycopg2
 import traceback
 from functools import lru_cache
@@ -18,6 +19,10 @@ AACT_CONFIG = {
     'port': 5432,
     'sslmode': 'require'
 }
+
+# Simple cache for search results with expiration (1 hour = 3600 seconds)
+_search_cache = {}
+CACHE_TTL = 3600
 
 def get_aact_connection():
     """Create and return a connection to the AACT database."""
@@ -110,7 +115,7 @@ def extract_drugs_from_text(text):
 
 def fetch_emergency_protocols(condition_keywords, limit_per_keyword=20):
     """
-    Query AACT for interventional, recruiting/active studies matching the given keywords.
+    Query AACT for studies matching the given keywords (broad search, no filters).
     Returns a list of raw study dictionaries.
     """
     conn = get_aact_connection()
@@ -121,7 +126,7 @@ def fetch_emergency_protocols(condition_keywords, limit_per_keyword=20):
     all_results = []
     
     for keyword in condition_keywords:
-        # Query with strict filters
+        # Broad query (no study_type/status filters)
         query = """
         SELECT 
             s.nct_id,
@@ -136,9 +141,7 @@ def fetch_emergency_protocols(condition_keywords, limit_per_keyword=20):
         FROM ctgov.studies s
         LEFT JOIN ctgov.brief_summaries bs ON s.nct_id = bs.nct_id
         LEFT JOIN ctgov.eligibilities ec ON s.nct_id = ec.nct_id
-        WHERE s.study_type = 'Interventional'
-          AND s.overall_status IN ('Recruiting', 'Active, not recruiting')
-          AND (LOWER(s.brief_title) LIKE %s 
+        WHERE (LOWER(s.brief_title) LIKE %s 
                OR LOWER(s.official_title) LIKE %s
                OR LOWER(bs.description) LIKE %s)
         LIMIT %s;
@@ -200,7 +203,31 @@ def transform_to_protocol(aact_study):
     return protocol
 
 def search_and_transform(keywords, limit=20):
-    """High-level function: search AACT and return a list of protocols ready for your app."""
+    """
+    High-level function: search AACT and return a list of protocols ready for your app.
+    Implements caching with TTL and logs query duration.
+    """
+    # Create a cache key from the keywords tuple and limit
+    cache_key = (tuple(keywords), limit)
+    current_time = time.time()
+    
+    # Check cache
+    if cache_key in _search_cache:
+        result, timestamp = _search_cache[cache_key]
+        if current_time - timestamp < CACHE_TTL:
+            print(f"AACT cache hit for {keywords}")
+            return result
+        else:
+            # Expired
+            del _search_cache[cache_key]
+    
+    # Perform the actual search with timing
+    start_time = time.time()
     raw = fetch_emergency_protocols(keywords, limit_per_keyword=limit)
     protocols = [transform_to_protocol(study) for study in raw]
+    duration = time.time() - start_time
+    print(f"AACT query for {keywords} took {duration:.3f} seconds, found {len(protocols)} protocols")
+    
+    # Store in cache
+    _search_cache[cache_key] = (protocols, current_time)
     return protocols

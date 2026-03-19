@@ -1,10 +1,41 @@
 import re
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
 import requests
 from functools import lru_cache
 from data import protocols
 
+# Global TF-IDF objects, initialized lazily
+_vectorizer = None
+_tfidf_matrix = None
+_protocol_indices = []  # list of (category, key) in same order as matrix rows
+
+def _build_tfidf_index():
+    """Build TF-IDF index from all protocols."""
+    global _vectorizer, _tfidf_matrix, _protocol_indices
+    texts = []
+    _protocol_indices = []
+    for category, cat_protocols in protocols.protocols.items():
+        for key, prot in cat_protocols.items():
+            # Combine title, category, and steps into one document
+            doc = f"{prot['title']} {category} " + " ".join(prot.get('steps', []))
+            texts.append(doc)
+            _protocol_indices.append((category, key))
+    _vectorizer = TfidfVectorizer(stop_words='english')
+    _tfidf_matrix = _vectorizer.fit_transform(texts)
+
+def _get_tfidf_scores(query_text):
+    """Return array of cosine similarities between query and all protocols."""
+    global _vectorizer, _tfidf_matrix
+    if _vectorizer is None or _tfidf_matrix is None:
+        _build_tfidf_index()
+    query_vec = _vectorizer.transform([query_text])
+    # cosine similarity = dot product of normalized vectors
+    similarities = (_tfidf_matrix * query_vec.T).toarray().flatten()
+    return similarities
+
 def _tokenize(text):
-    """Convert text to set of lowercase alphanumeric tokens."""
+    """Convert text to set of lowercase alphanumeric tokens (kept for potential future use)."""
     if not text:
         return set()
     words = re.findall(r'\b[a-z0-9]+\b', text.lower())
@@ -16,14 +47,11 @@ def check_openfda(drug_name, patient_allergies_tuple):
     Query OpenFDA for adverse events related to the drug.
     Returns True if the drug has known adverse reactions matching patient allergies.
     """
-    # Convert tuple back to list for processing
     patient_allergies = list(patient_allergies_tuple)
     if not patient_allergies:
         return False
 
-    # Build query: search for drug name and reaction terms matching allergies
     query_parts = [f'patient.drug.medicinalproduct:"{drug_name}"']
-    # Add reaction terms (OR)
     reaction_terms = ' OR '.join([f'patient.reaction.reactionmeddrapt:"{allergy}"' for allergy in patient_allergies])
     if reaction_terms:
         query_parts.append(f'({reaction_terms})')
@@ -35,112 +63,93 @@ def check_openfda(drug_name, patient_allergies_tuple):
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             data = response.json()
-            # If there's at least one result, the drug has a reported adverse event matching an allergy
             return data.get('meta', {}).get('results', {}).get('total', 0) > 0
         elif response.status_code == 404:
-            # No results means no adverse events found
             return False
         else:
-            # Log error (use print for now, but consider proper logging)
             print(f"OpenFDA error: {response.status_code} - {response.text}")
             return False
     except Exception as e:
         print(f"OpenFDA exception: {e}")
         return False
 
-def compute_relevance(protocol, patient, query_tokens):
+def score_protocols(query_text, patient, threshold=0.55, limit=5):
     """
-    Compute relevance score for a single protocol against patient and query.
-    Returns score between 0 and 1.
+    Rank all protocols against query and patient using TF‑IDF similarity.
+    Returns list of dicts with protocol details and score.
     """
-    score = 0.0
+    # Ensure TF‑IDF index is built
+    global _protocol_indices, _vectorizer, _tfidf_matrix
+    if not _protocol_indices:
+        _build_tfidf_index()
 
-    # Baseline weight (30%)
-    baseline = protocol.get('baseline_relevance', 0.5)
-    score += baseline * 0.3
+    # Precompute query similarities for all protocols
+    query_similarities = _get_tfidf_scores(query_text)
 
-    # Keyword match vs protocol (45%)
-    protocol_text = ' '.join([
-        protocol['title'],
-        protocol.get('category', ''),
-        ' '.join(protocol.get('steps', []))
-    ])
-    protocol_tokens = _tokenize(protocol_text)
-    if query_tokens:
-        match_protocol = len(query_tokens & protocol_tokens) / len(query_tokens)
-    else:
-        match_protocol = 0
-    score += match_protocol * 0.45
-
-    # Keyword match vs patient (25%)
+    # Precompute patient vector once
     patient_text = ' '.join([
         patient.get('complaint', ''),
         patient.get('presentation', ''),
         ' '.join(patient.get('history', []))
     ])
-    patient_tokens = _tokenize(patient_text)
-    if query_tokens:
-        match_patient = len(query_tokens & patient_tokens) / len(query_tokens)
-    else:
-        match_patient = 0
-    score += match_patient * 0.25
+    patient_vec = _vectorizer.transform([patient_text])
 
-    # Vital sign boosts
-    vitals = patient.get('vitals', {})
-
-    # SpO2 < 90% and protocol mentions oxygen
-    if vitals.get('spo2', 100) < 90 and 'oxygen' in protocol_text.lower():
-        score += 0.10
-
-    # GCS < 13 and protocol mentions neuro
-    if vitals.get('gcs', 15) < 13 and ('neuro' in protocol_text.lower() or 'gcs' in protocol_text.lower()):
-        score += 0.10
-
-    # HR > 110 and protocol mentions cardiac
-    if vitals.get('hr', 80) > 110 and ('cardiac' in protocol_text.lower() or 'heart' in protocol_text.lower()):
-        score += 0.08
-
-    # Systolic BP > 160 and protocol mentions stroke
-    if vitals.get('bp_sys', 120) > 160 and ('stroke' in protocol_text.lower() or 'neuro' in protocol_text.lower()):
-        score += 0.08
-
-    # OpenFDA contraindication check
-    if protocol.get('drugs'):
-        # Convert patient allergies list to a tuple for caching (must be hashable)
-        allergies_tuple = tuple(patient.get('allergies', []))
-        for drug in protocol['drugs']:
-            if check_openfda(drug, allergies_tuple):
-                score *= 0.5  # halve score if contraindicated
-                break
-
-    return min(score, 1.0)  # Cap at 1.0
-
-def score_protocols(query_text, patient, threshold=0.55, limit=5):
-    """
-    Rank all protocols against query and patient.
-    Returns list of dicts with protocol details and score.
-    """
-    query_tokens = _tokenize(query_text)
     results = []
 
-    for category, cat_protocols in protocols.protocols.items():
-        for key, protocol in cat_protocols.items():
-            # Add category to protocol dict for tokenization
-            protocol['category'] = category
-            score = compute_relevance(protocol, patient, query_tokens)
-            if score >= threshold:
-                result = {
-                    'category': category,
-                    'key': key,
-                    'title': protocol['title'],
-                    'priority': protocol['priority'],
-                    'steps': protocol['steps'],
-                    'contraindications': protocol['contraindications'],
-                    'source': protocol['source'],
-                    'score': round(score * 100, 1)
-                }
-                results.append(result)
+    for idx, (category, key) in enumerate(_protocol_indices):
+        protocol = protocols.protocols[category][key].copy()
+        protocol['category'] = category
 
-    # Sort descending by score
+        # Baseline weight (20%)
+        baseline = protocol.get('baseline_relevance', 0.5)
+        score = baseline * 0.2
+
+        # Query similarity (40%)
+        query_sim = query_similarities[idx]
+        score += query_sim * 0.4
+
+        # Patient similarity (20%)
+        patient_sim = (_tfidf_matrix[idx] * patient_vec.T).toarray()[0, 0]
+        score += patient_sim * 0.2
+
+        # Vital sign boosts (up to 0.36)
+        vitals = patient.get('vitals', {})
+        protocol_text = ' '.join([
+            protocol['title'],
+            category,
+            ' '.join(protocol.get('steps', []))
+        ]).lower()
+
+        if vitals.get('spo2', 100) < 90 and 'oxygen' in protocol_text:
+            score += 0.10
+        if vitals.get('gcs', 15) < 13 and ('neuro' in protocol_text or 'gcs' in protocol_text):
+            score += 0.10
+        if vitals.get('hr', 80) > 110 and ('cardiac' in protocol_text or 'heart' in protocol_text):
+            score += 0.08
+        if vitals.get('bp_sys', 120) > 160 and ('stroke' in protocol_text or 'neuro' in protocol_text):
+            score += 0.08
+
+        # OpenFDA contraindication penalty
+        if protocol.get('drugs'):
+            allergies_tuple = tuple(patient.get('allergies', []))
+            for drug in protocol['drugs']:
+                if check_openfda(drug, allergies_tuple):
+                    score *= 0.5
+                    break
+
+        score = min(score, 1.0)
+
+        if score >= threshold:
+            results.append({
+                'category': category,
+                'key': key,
+                'title': protocol['title'],
+                'priority': protocol['priority'],
+                'steps': protocol['steps'],
+                'contraindications': protocol['contraindications'],
+                'source': protocol['source'],
+                'score': round(score * 100, 1)
+            })
+
     results.sort(key=lambda x: x['score'], reverse=True)
     return results[:limit]

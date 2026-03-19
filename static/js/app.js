@@ -1,4 +1,4 @@
-// static/js/app.js – fully updated with AACT source badge
+// static/js/app.js – fully updated with AACT source badge and voice input
 
 // State
 let currentPatientKey = 'cardiac';
@@ -13,6 +13,7 @@ const patientContent = document.getElementById('patientContent');
 const chatMessages = document.getElementById('chatMessages');
 const suggestionChips = document.getElementById('suggestionChips');
 const queryInput = document.getElementById('queryInput');
+const micBtn = document.getElementById('micBtn');          // NEW
 const sendBtn = document.getElementById('sendQueryBtn');
 const protocolsList = document.getElementById('protocolsList');
 const protocolCountSpan = document.getElementById('protocolCount');
@@ -26,6 +27,9 @@ const patientSearch = document.getElementById('patientSearch');
 const searchResults = document.getElementById('patientSearchResults');
 const protocolFilter = document.getElementById('protocolFilter');
 
+// Speech recognition globals
+let recognition = null;
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     await loadAndRenderPatient(currentPatientKey);
@@ -38,6 +42,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     queryInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleQuery();
     });
+
+    // Voice input setup
+    if (micBtn) {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            micBtn.addEventListener('click', () => {
+                recognition.start();
+                micBtn.textContent = '⏺️'; // recording indicator
+                micBtn.disabled = true;      // optional: prevent double clicks
+            });
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                queryInput.value = transcript;
+                micBtn.textContent = '🎤';
+                micBtn.disabled = false;
+                // Auto‑submit after a short delay (optional)
+                setTimeout(() => handleQuery(), 500);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error', event.error);
+                micBtn.textContent = '🎤';
+                micBtn.disabled = false;
+            };
+
+            recognition.onend = () => {
+                micBtn.textContent = '🎤';
+                micBtn.disabled = false;
+            };
+        } else {
+            micBtn.disabled = true;
+            micBtn.title = 'Voice input not supported in this browser';
+        }
+    }
 
     quickActions.forEach(btn => {
         btn.addEventListener('click', handleQuickAction);

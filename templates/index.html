@@ -25,9 +25,9 @@
                 <button class="patient-tab" data-patient="neuro">P. Wong</button>
             </div>
             <div class="patient-search">
-    <input type="text" id="patientSearch" placeholder="Search patients..." autocomplete="off">
-    <div id="patientSearchResults" class="search-results"></div>
-</div>
+                <input type="text" id="patientSearch" placeholder="Search patients..." autocomplete="off">
+                <div id="patientSearchResults" class="search-results"></div>
+            </div>
             <div id="patientContent" class="patient-content">
                 <!-- Populated by JavaScript -->
             </div>
@@ -48,6 +48,7 @@
             </div>
             <div class="query-input-area">
                 <input type="text" id="queryInput" placeholder="Enter clinical query..." autocomplete="off">
+                <button id="micBtn" title="Speak your query">🎤</button>
                 <button id="sendQueryBtn">→</button>
             </div>
         </div>
@@ -57,6 +58,10 @@
             <div class="protocols-header">
                 <h2>MATCHING PROTOCOLS</h2>
                 <span class="protocol-count" id="protocolCount">0</span>
+            </div>
+            <!-- Protocol filter moved inside the panel -->
+            <div class="protocol-filter">
+                <input type="text" id="protocolFilter" placeholder="Filter protocols...">
             </div>
             <div id="protocolsList" class="protocols-list">
                 <!-- Populated by JavaScript -->
@@ -71,9 +76,6 @@
             <div id="modalProtocolDetail"></div>
         </div>
     </div>
-    <div class="protocol-filter">
-    <input type="text" id="protocolFilter" placeholder="Filter protocols...">
-</div>
 
     <script src="/static/js/api.js"></script>
     <script src="/static/js/sparkline.js"></script>

@@ -48,8 +48,16 @@ async function apiPostNote(patientKey, author, text) {
     return res.json();
 }
 
-// New function for patient search
+// Patient search function
 async function apiSearchPatients(query) {
     const res = await fetch(`${API_BASE}/patients/search?q=${encodeURIComponent(query)}`);
+    return res.json();
+}
+
+// AACT search function (for direct access, if needed)
+async function apiAactSearch(keywords, limit = 10) {
+    const res = await fetch(`${API_BASE}/aact/search?keywords=${encodeURIComponent(keywords)}&limit=${limit}`, {
+        credentials: 'include'
+    });
     return res.json();
 }
