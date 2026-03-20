@@ -2,6 +2,7 @@ import time
 import os
 import base64
 import requests
+import traceback
 from flask import Blueprint, jsonify, request, abort
 from flask_login import login_required, current_user
 from data import patients, protocols, vitals_history, suggestions
@@ -108,20 +109,32 @@ def query():
     if not patient:
         abort(404)
 
+    print(f"🔍 Query received: '{query_text}' for patient {patient_key}")
+
     # Get static protocol results
     static_results = score_protocols(query_text, patient, threshold, limit)
+    print(f"📊 Static results: {len(static_results)} protocols")
 
     # Decide if we need AACT results
     need_aact = False
     if len(static_results) < 3:
         need_aact = True
+        print(f"⚠️ Need AACT: only {len(static_results)} static results")
     elif static_results and static_results[0]['score'] < 60:
         need_aact = True
+        print(f"⚠️ Need AACT: top score {static_results[0]['score']} < 60")
+
+    # For testing, you can uncomment this line to force AACT for all queries
+    # need_aact = True
+    # print(f"⚠️ Force AACT enabled for testing")
 
     if need_aact:
         try:
+            print(f"🌐 Calling AACT for: '{query_text}'")
             # Call AACT search with the same query (use single keyword)
             aact_protocols = search_and_transform([query_text], limit=5)
+            print(f"✅ AACT returned {len(aact_protocols)} protocols")
+            
             # Add a default score and source flag
             for p in aact_protocols:
                 p['score'] = 50  # Base score for AACT results
@@ -129,19 +142,24 @@ def query():
                 # Ensure required fields exist for frontend
                 if 'priority' not in p:
                     p['priority'] = 'moderate'
-                if 'steps' not in p:
+                if 'steps' not in p or not p['steps']:
                     p['steps'] = ['See protocol details at source']
                 if 'contraindications' not in p:
                     p['contraindications'] = []
+            
             # Merge static and AACT results, then sort by score descending
             combined = static_results + aact_protocols
             combined.sort(key=lambda x: x.get('score', 0), reverse=True)
             results = combined[:limit]
+            print(f"🎯 Combined results: {len(results)} protocols")
+            
         except Exception as e:
             # Log error and fall back to static only
-            print(f"AACT query error: {e}")
+            print(f"❌ AACT query error: {e}")
+            traceback.print_exc()
             results = static_results
     else:
+        print(f"✅ Using only static results: {len(static_results)} protocols")
         results = static_results
 
     return jsonify({'results': results})
@@ -212,7 +230,7 @@ def aact_search():
         print(f"AACT search error: {e}")
         return jsonify({'error': str(e)}), 500
 
-# ====== NEW: AACT test endpoint ======
+# ====== AACT test endpoint ======
 @api_bp.route('/aact/test', methods=['GET'])
 @login_required
 def aact_test():
