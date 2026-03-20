@@ -17,7 +17,3 @@ A clinical decision-support web application built with Flask. Helps emergency st
 2. On Render.com, create a new Web Service and connect your repo
 3. Render auto-detects settings; click Create Web Service
 4. Your app will be live at a .onrender.com URL
-
-## Environment Variables (optional)
-
-- `SCALEDOWN_API_KEY`: API key for ScaleDown image compression (if used)
