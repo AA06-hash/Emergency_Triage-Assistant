@@ -61,7 +61,10 @@ A clinical decision-support web application built with Flask. Helps emergency st
 
    ```bash
    python app.py
- 
+
+ 6. Visit http://localhost:5000
+
+Add API Documentation & Acknowledgements
 ```markdown
 ## API Endpoints
 
