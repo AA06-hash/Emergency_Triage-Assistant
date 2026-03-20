@@ -27,7 +27,6 @@ A clinical decision-support web application built with Flask. Helps emergency st
 ![Flask](https://img.shields.io/badge/Flask-3.0-green)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)
 ![Render](https://img.shields.io/badge/Deployed-Render-purple)
-![License](https://img.shields.io/badge/License-MIT-yellow)
 [![Contributors](https://img.shields.io/github/contributors/AA06-hash/Emergency_Triage-Assistant)](https://github.com/AA06-hash/Emergency_Triage-Assistant/graphs/contributors)
 
 ## 🛠️ Local Development Setup
@@ -36,35 +35,35 @@ A clinical decision-support web application built with Flask. Helps emergency st
    ```bash
    git clone https://github.com/AA06-hash/Emergency_Triage-Assistant.git
    cd Emergency_Triage-Assistant
-   
-2. Create virtual environment
+   ```
 
+2. Create virtual environment
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
-   
-3. Install dependencies
+   ```
 
+3. Install dependencies
    ```bash
    pip install -r requirements.txt
-   
-4. Set up environment variables (create a .env file in the root):
+   ```
 
-   text
+4. Set up environment variables (create a `.env` file in the root):
+   ```
    AACT_USER=your_aact_username
    AACT_PASSWORD=your_aact_password
    DATABASE_URL=mysql+pymysql://username:password@host:port/emergency_triage
    SECRET_KEY=your_secret_key
    SCALEDOWN_API_KEY=your_key  # optional
-   
-5. Run the app
+   ```
 
+5. Run the app
    ```bash
    python app.py
+   ```
 
- 6. Visit http://localhost:5000
-
-Add API Documentation & Acknowledgements
+6. Visit http://localhost:5000
+ 
 ```markdown
 ## API Endpoints
 
