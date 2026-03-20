@@ -5,8 +5,8 @@ A clinical decision-support web application built with Flask. Helps emergency st
 ## Team CTRL+GENZ
 
 - **Avani Ashiha S** – Backend Development, AACT Integration, Deployment
-- **[Member 2 Name]** – Frontend Development, Voice Input, UI/UX
-- **[Member 3 Name]** – Database Setup, Testing, Documentation
+- **Bejjala chakrapani** – Frontend Development, Voice Input, UI/UX
+- **P.Ranga Venkata Lakashmi Reddy** – Database Setup, Testing, Documentation
 
 ## Features
 
