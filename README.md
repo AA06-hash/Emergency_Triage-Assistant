@@ -2,22 +2,66 @@
 
 A clinical decision-support web application built with Flask. Helps emergency staff match symptoms to treatment protocols.
 
-## Local Development
+## Team CTRL+GENZ
 
-1. Clone the repo
-2. Create virtual environment: `python -m venv venv`
-3. Activate: `source venv/bin/activate` (Windows: `venv\Scripts\activate`)
-4. Install dependencies: `pip install -r requirements.txt`
-5. Run: `python app.py`
-6. Visit http://localhost:5000
+- **Avani Ashiha S** – Backend Development, AACT Integration, Deployment
+- **[Member 2 Name]** – Frontend Development, Voice Input, UI/UX
+- **[Member 3 Name]** – Database Setup, Testing, Documentation
 
-## Deploy to Render
+## Features
 
-1. Push code to a GitHub repository
-2. On Render.com, create a new Web Service and connect your repo
-3. Render auto-detects settings; click Create Web Service
-4. Your app will be live at a .onrender.com URL
+- **Voice‑Enabled Queries** – Speak clinical questions using the Web Speech API
+- **Real‑Time Patient Data** – View vitals, history, allergies, and 30‑minute trends
+- **Smart Protocol Matching** – TF‑IDF relevance engine ranks the best protocols
+- **Massive Protocol Library** – 16 static protocols + 576,000+ ClinicalTrials.gov studies
+- **Drug Safety Checks** – OpenFDA integration for contraindications
+- **Clinical Notes** – Persistent notes per patient (MySQL)
+- **Patient Search** – Quickly find patients by name or symptoms
+- **Protocol Filtering** – Filter by keyword, priority, or source
+- **Mobile Responsive** – Works on phones and tablets
+- **Live Deployment** – Hosted on Render with automatic HTTPS
 
+## Tech Stack
+
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![Flask](https://img.shields.io/badge/Flask-3.0-green)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)
+![Render](https://img.shields.io/badge/Deployed-Render-purple)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+[![Contributors](https://img.shields.io/github/contributors/AA06-hash/Emergency_Triage-Assistant)](https://github.com/AA06-hash/Emergency_Triage-Assistant/graphs/contributors)
+
+## 🛠️ Local Development Setup
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/AA06-hash/Emergency_Triage-Assistant.git
+   cd Emergency_Triage-Assistant
+   
+2. Create virtual environment
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   
+3. Install dependencies
+
+   ```bash
+   pip install -r requirements.txt
+   
+4. Set up environment variables (create a .env file in the root):
+
+   text
+   AACT_USER=your_aact_username
+   AACT_PASSWORD=your_aact_password
+   DATABASE_URL=mysql+pymysql://username:password@host:port/emergency_triage
+   SECRET_KEY=your_secret_key
+   SCALEDOWN_API_KEY=your_key  # optional
+   
+5. Run the app
+
+   ```bash
+   python app.py
+ 
 ```markdown
 ## API Endpoints
 
